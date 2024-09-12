@@ -1,0 +1,5 @@
+split 1, 3
+char a
+jmp 4
+char b
+match

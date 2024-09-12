@@ -1,0 +1,7 @@
+split 1, 6
+epsset 0
+char a
+split 4, 6
+epschk 0
+jmp 1
+match

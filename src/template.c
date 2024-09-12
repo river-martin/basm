@@ -33,7 +33,8 @@ typedef struct thread {
 Thread *new_Thread(const char *sp, byte *pc)
 {
     Thread *thread = malloc(sizeof(Thread));
-    *thread        = (Thread){ .sp = sp, .pc = pc, .saved_sps = { NULL } };
+    *thread        = (Thread){ .sp = sp, .pc = pc };
+    for (size_t i = 0; i < NUM_CAPTURES; i++) thread->saved_sps[i] = NULL;
     return thread;
 }
 
@@ -44,11 +45,12 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    const char *text                 = argv[1];
-    const char *eps_sps[NUM_EPSSETS] = { NULL };
-    const char *codepoint            = NULL;
-    vp_stack_t *thread_stack         = vp_stack_new();
-    Thread     *thread               = new_Thread(text, &&basm_start);
+    const char *text = argv[1];
+    const char *eps_sps[NUM_EPSSETS];
+    for (size_t i = 0; i < NUM_EPSSETS; i++) eps_sps[i] = NULL;
+    const char *codepoint    = NULL;
+    vp_stack_t *thread_stack = vp_stack_new();
+    Thread     *thread       = new_Thread(text, &&basm_start);
 
     vp_stack_push(thread_stack, thread);
 

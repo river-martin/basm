@@ -1,5 +1,5 @@
-# basm
-An assembler for the BRU project's symbolic regex virtual machine assembly language (BASM)
+# rasm
+An assembler-like tool for a regex assembly language (RASM) 
 
 ## Build
 

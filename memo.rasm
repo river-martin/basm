@@ -1,0 +1,10 @@
+save 0
+split 2, 6
+split 3, 4
+char a
+memo 0
+jmp 7
+char b
+memo 1
+save 1
+match

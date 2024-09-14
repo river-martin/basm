@@ -1,26 +1,35 @@
-LD_FLAGS := -Lc-lib-stack/build -lstack
+LIBSTACK := c-lib-stack/libstack.a
 
-LIBSTACK := c-lib-stack/build/libstack.a
+LD_FLAGS := -Lc-lib-stack -lstack
 
-all: gen-src a_or_b a_star
+CODE_FILES := $(wildcard src/*.c src/*.h)
+
+
+all: bin/a_or_b bin/a_star bin/memo
 
 gen-src:
 	mkdir -p gen-src
 
-a_or_b: gen-src $(LIBSTACK) | a_or_b.basm src/template.c
-	python3.12 src/basm.py a_or_b.basm > gen-src/a_or_b.c
-	clang -o a_or_b gen-src/a_or_b.c $(LD_FLAGS)
+bin:
+	mkdir -p bin
 
-a_star: gen-src $(LIBSTACK) | a_star.basm src/template.c
-	python3.12 src/basm.py a_star.basm > gen-src/a_star.c
-	clang -o a_star gen-src/a_star.c $(LD_FLAGS)
+bin/a_or_b:  $(LIBSTACK) $(CODE_FILES) a_or_b.rasm | gen-src bin
+	python3.12 src/rasm.py a_or_b.rasm > gen-src/a_or_b.c
+	clang -o bin/a_or_b gen-src/a_or_b.c $(LD_FLAGS)
+
+bin/a_star: $(LIBSTACK) $(CODE_FILES) a_star.rasm | gen-src bin
+	python3.12 src/rasm.py a_star.rasm > gen-src/a_star.c
+	clang -o bin/a_star gen-src/a_star.c $(LD_FLAGS)
+
+bin/memo: $(LIBSTACK) $(CODE_FILES) memo.rasm | gen-src bin
+	python3.12 src/rasm.py memo.rasm > gen-src/memo.c
+	clang -o bin/memo gen-src/memo.c $(LD_FLAGS)
 
 $(LIBSTACK):
-	$(MAKE) -C c-lib-stack build/libstack.a
+	$(MAKE) -C c-lib-stack libstack.a
 
 clean:
-	rm -f a_star
-	rm -f a_or_b
+	rm -rf bin
 	rm -rf gen-src
 
 .PHONY: clean all

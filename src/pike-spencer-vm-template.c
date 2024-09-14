@@ -3,11 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Placeholder macro definitions (to be replaced by the assembler, `basm.py`)
+// Placeholder macro definitions (to be replaced by the assembler, `rasm.py`)
 #define NUM_CAPTURES 0
 #define NUM_EPSSETS  0
-
-#define basm_line(i) basm_line_##i
 
 #define kill(thread)       \
     do {                   \
@@ -47,10 +45,11 @@ int main(int argc, char *argv[])
 
     const char *text = argv[1];
     const char *eps_sps[NUM_EPSSETS];
+    byte  memo[1][strlen(text)];
     for (size_t i = 0; i < NUM_EPSSETS; i++) eps_sps[i] = NULL;
     const char *codepoint    = NULL;
-    vp_stack_t *thread_stack = vp_stack_new();
-    Thread     *thread       = new_Thread(text, &&basm_start);
+    vp_stack   *thread_stack = vp_stack_new();
+    Thread     *thread       = new_Thread(text, &&rasm_start);
 
     vp_stack_push(thread_stack, thread);
 
@@ -59,13 +58,13 @@ control_unit:
     if (thread)
         goto * thread->pc;
     else
-        goto basm_no_match;
-basm_start:
+        goto rasm_no_match;
+rasm_start:
 
     // CODE HERE
 
-basm_no_match:
+rasm_no_match:
     printf("No match\n");
-basm_end:
+rasm_end:
     return EXIT_SUCCESS;
 }

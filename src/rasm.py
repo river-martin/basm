@@ -1,5 +1,4 @@
-"""An assembler for the BRU symbolic regex virtual machine assembly language (BRU Assembly)"""
-
+"""An assembler-like tool for a regex assembly language (RASM)"""
 
 def get_instr_c_lines(instr_kw, line, line_num):
     c_lines = []
@@ -10,7 +9,7 @@ def get_instr_c_lines(instr_kw, line, line_num):
             raise NotImplementedError("Not implemented")
         case "match":
             # TODO
-            c_lines = [r'printf("match\n");', "goto basm_end;"]
+            c_lines = [r'printf("match\n");', "goto rasm_end;"]
         case "begin":
             c_lines = ["if (thread->sp != text) kill(thread);"]
             raise NotImplementedError("Not implemented")
@@ -46,9 +45,8 @@ def get_instr_c_lines(instr_kw, line, line_num):
         case "memo":
             j = line.split()[1]
             c_lines = [
-                f"memo[{j}][thread->sp - text] ? kill(thread) : memo[{j}][thread->sp - text] = 1;"
+                f"if (memo[{j}][thread->sp - text]) kill(thread); else memo[{j}][thread->sp - text] = 1;"
             ]
-            raise NotImplementedError("Not implemented")
         case "save":
             j = line.split()[1]
             c_lines = [f"thread->saved_sps[{j}] = thread->sp;"]
@@ -58,7 +56,7 @@ def get_instr_c_lines(instr_kw, line, line_num):
         case "jmp":
             dest = line.split()[1]
             c_lines = [
-                f"goto basm_line_{dest};",
+                f"goto rasm_line_{dest};",
             ]
         case "gsplit":
             # TODO
@@ -70,8 +68,8 @@ def get_instr_c_lines(instr_kw, line, line_num):
             d1, d2 = line.replace(",", "").split()[1:]
 
             c_lines = [
-                f"vp_stack_push(thread_stack, new_Thread(thread->sp, &&basm_line_{d2}));",
-                f"goto basm_line_{d1};",
+                f"vp_stack_push(thread_stack, new_Thread(thread->sp, &&rasm_line_{d2}));",
+                f"goto rasm_line_{d1};",
             ]
         case "zwa":
             raise NotImplementedError("Not implemented")
@@ -83,35 +81,38 @@ def get_instr_c_lines(instr_kw, line, line_num):
             raise NotImplementedError("Not implemented")
         case _:
             raise NotImplementedError("Not implemented")
-    c_lines = [f"basm_line_{line_num}: // {line}"] + list(
+    c_lines = [f"rasm_line_{line_num}: // {line}"] + list(
         map(lambda x: f"    {x}\n", c_lines)
     )
     return c_lines
 
 
-def assemble(basm_file_name):
-    basm_file = open(basm_file_name, "r")
+def assemble(rasm_file_name):
+    rasm_file = open(rasm_file_name, "r")
     prog_c_lines = []
     num_epssets = 0
     num_captures = 0
-    for line_num, line in enumerate(basm_file.readlines()):
+    num_memos = 0
+    for line_num, line in enumerate(rasm_file.readlines()):
         instr_kw = line.split()[0]
         if instr_kw == "epsset":
             num_epssets += 1
         elif instr_kw == "save":
             num_captures += 1
+        elif instr_kw == "memo":
+            num_memos += 1
         instr_c_lines = get_instr_c_lines(instr_kw, line, line_num)
         prog_c_lines.extend(instr_c_lines)
-    basm_file.close()
+    rasm_file.close()
 
     prog_c_lines = "".join(prog_c_lines)
 
-    c_file_name = "src/template.c"
+    c_file_name = "src/pike-spencer-vm-template.c"
     with open(c_file_name, "r") as c_file:
         template = c_file.read()
     c_code = template.replace(
-        "// Placeholder macro definitions (to be replaced by the assembler, `basm.py`)\n#define NUM_CAPTURES 0\n#define NUM_EPSSETS 0",
-        f"#define NUM_CAPTURES {num_captures}\n#define NUM_EPSSETS {num_epssets}",
+        "// Placeholder macro definitions (to be replaced by the assembler, `rasm.py`)\n#define NUM_CAPTURES 0\n#define NUM_EPSSETS 0",
+        f"#define NUM_CAPTURES {num_captures}\n#define NUM_EPSSETS {num_epssets}\n#define NUM_MEMOS {num_memos}",
     )
 
     prog_c_lines = "".join(prog_c_lines)
@@ -122,5 +123,5 @@ def assemble(basm_file_name):
 if __name__ == "__main__":
     import sys
 
-    basm_file_name = sys.argv[1]
-    assemble(basm_file_name)
+    rasm_file_name = sys.argv[1]
+    assemble(rasm_file_name)

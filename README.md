@@ -10,13 +10,13 @@ make
 ## Run examples
 
 ```Bash
-./a_or_b a
-./a_or_b b
-./a_or_b c
+./bin/a_or_b a
+./bin/a_or_b b
+./bin/a_or_b c
 ```
 
 ```Bash
-./a_star ""
-./a_star a
-./a_star aa
+./bin/a_star ""
+./bin/a_star a
+./bin/a_star aa
 ```

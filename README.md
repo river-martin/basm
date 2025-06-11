@@ -5,6 +5,10 @@ An assembler-like tool for a regex assembly language (RASM).
 ## Build
 
 ```Bash
+python3 -m venv .env
+source .env/bin/activate
+git submodule init
+git submodule update
 make
 ```
 

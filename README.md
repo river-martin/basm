@@ -1,5 +1,6 @@
 # rasm
-An assembler-like tool for a regex assembly language (RASM) 
+
+An assembler-like tool for a regex assembly language (RASM).
 
 ## Build
 

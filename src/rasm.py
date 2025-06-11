@@ -1,14 +1,13 @@
 """An assembler-like tool for a regex assembly language (RASM)"""
 
+
 def get_instr_c_lines(instr_kw, line, line_num):
     c_lines = []
     match instr_kw:
         # Instructions with no operands
         case "noop":
-            # TODO
             raise NotImplementedError("Not implemented")
         case "match":
-            # TODO
             c_lines = [r'printf("match\n");', "goto rasm_end;"]
         case "begin":
             c_lines = ["if (thread->sp != text) kill(thread);"]
@@ -17,7 +16,6 @@ def get_instr_c_lines(instr_kw, line, line_num):
             c_lines = ["if (*thread->sp != '\00') kill(thread);"]
             raise NotImplementedError("Not implemented")
         case "state":
-            # TODO
             raise NotImplementedError("Not implemented")
         # Instructions with one char operand
         case "char":
@@ -31,7 +29,6 @@ def get_instr_c_lines(instr_kw, line, line_num):
             ]
         # Instructiosn with one int operand
         case "epsreset":
-            # TODO
             raise NotImplementedError("Not implemented")
         case "epsset":
             j = line.split()[1]
@@ -40,18 +37,17 @@ def get_instr_c_lines(instr_kw, line, line_num):
             j = line.split()[1]
             c_lines = [f"if (eps_sps[{j}] == thread->sp) kill(thread);"]
         case "inc":
-            # TODO
             raise NotImplementedError("Not implemented")
         case "memo":
             j = line.split()[1]
             c_lines = [
-                f"if (memo[{j}][thread->sp - text]) kill(thread); else memo[{j}][thread->sp - text] = 1;"
+                f"if (memo[{j}][thread->sp - text]) kill(thread);"
+                f"else memo[{j}][thread->sp - text] = 1;"
             ]
         case "save":
             j = line.split()[1]
             c_lines = [f"thread->saved_sps[{j}] = thread->sp;"]
         case "pred":
-            # TODO
             raise NotImplementedError("Not implemented")
         case "jmp":
             dest = line.split()[1]
@@ -59,10 +55,8 @@ def get_instr_c_lines(instr_kw, line, line_num):
                 f"goto rasm_line_{dest};",
             ]
         case "gsplit":
-            # TODO
             raise NotImplementedError("Not implemented")
         case "lsplit":
-            # TODO
             raise NotImplementedError("Not implemented")
         case "split":
             d1, d2 = line.replace(",", "").split()[1:]
@@ -88,7 +82,7 @@ def get_instr_c_lines(instr_kw, line, line_num):
 
 
 def assemble(rasm_file_name):
-    rasm_file = open(rasm_file_name, "r")
+    rasm_file = open(rasm_file_name, "r", encoding="utf-8")
     prog_c_lines = []
     num_epssets = 0
     num_captures = 0
@@ -108,11 +102,15 @@ def assemble(rasm_file_name):
     prog_c_lines = "".join(prog_c_lines)
 
     c_file_name = "src/pike-spencer-vm-template.c"
-    with open(c_file_name, "r") as c_file:
+    with open(c_file_name, "r", encoding='utf-8') as c_file:
         template = c_file.read()
     c_code = template.replace(
-        "// Placeholder macro definitions (to be replaced by the assembler, `rasm.py`)\n#define NUM_CAPTURES 0\n#define NUM_EPSSETS 0",
-        f"#define NUM_CAPTURES {num_captures}\n#define NUM_EPSSETS {num_epssets}\n#define NUM_MEMOS {num_memos}",
+        "// Placeholder macro definitions (to be replaced by the assembler, `rasm.py`)\n"
+        "#define NUM_CAPTURES 0\n"
+        "#define NUM_EPSSETS 0",
+        f"#define NUM_CAPTURES {num_captures}\n"
+        f"#define NUM_EPSSETS {num_epssets}\n"
+        f"#define NUM_MEMOS {num_memos}",
     )
 
     prog_c_lines = "".join(prog_c_lines)
@@ -123,5 +121,4 @@ def assemble(rasm_file_name):
 if __name__ == "__main__":
     import sys
 
-    rasm_file_name = sys.argv[1]
-    assemble(rasm_file_name)
+    assemble(sys.argv[1])
